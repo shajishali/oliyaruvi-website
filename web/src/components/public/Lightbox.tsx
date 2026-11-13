@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { lightboxKeyAction } from "../../lib/lightbox-keys";
 import { IconButton } from "../ui/IconButton";
 
 type Props = {
@@ -14,9 +15,10 @@ export function Lightbox({ open, src, alt, onClose, onPrev, onNext }: Props) {
   useEffect(() => {
     if (!open) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowLeft") onPrev?.();
-      if (event.key === "ArrowRight") onNext?.();
+      const action = lightboxKeyAction(event.key);
+      if (action === "close") onClose();
+      if (action === "prev") onPrev?.();
+      if (action === "next") onNext?.();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);

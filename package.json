@@ -7,7 +7,7 @@
     "start": "npm run start -w server",
     "lint": "npm run lint -w web && npm run lint -w server",
     "typecheck": "npm run typecheck -w web && npm run typecheck -w server",
-    "test": "npm run test -w server",
+    "test": "npm run test -w server && npm run test -w web",
     "seed:admin": "npm run seed:admin -w server"
   },
   "workspaces": [

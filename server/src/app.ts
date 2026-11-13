@@ -119,6 +119,10 @@ export function createApp(options: CreateAppOptions = {}): Express {
   }
 
   app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "LIMIT_FILE_SIZE") {
+      res.status(413).json({ error: "File is too large." });
+      return;
+    }
     console.error(error);
     if (error instanceof Error && /Slug already exists|Invalid content|Unsupported/.test(error.message)) {
       res.status(400).json({ error: error.message });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getLiveChannels, getLiveEvents } from "../../lib/api";
 import { asString, localizedField, pickLocale } from "../../lib/content";
+import { liveEventBadgeLabel, matchesLiveMode } from "../../lib/live-badge";
 import { useLocale } from "../../lib/locale";
 import type { LiveChannel, LiveEvent } from "../../lib/types";
 import { Badge } from "../ui/Badge";
@@ -35,11 +36,7 @@ export function LiveEventsBlock({ content }: { content: Record<string, unknown> 
 
   const identities = channels.filter((channel) => channel.kind === "identity");
   const filtered = events
-    .filter((event) => {
-      if (mode === "featured") return event.isFeatured;
-      if (mode === "past") return event.status === "ended";
-      return event.status === "upcoming" || event.status === "live";
-    })
+    .filter((event) => matchesLiveMode(event.status, mode, event.isFeatured))
     .slice(0, limit);
 
   return (
@@ -75,15 +72,7 @@ export function LiveEventsBlock({ content }: { content: Record<string, unknown> 
           {filtered.map((event) => (
             <article key={event.id} className="card">
               <div className="flex flex-wrap items-center gap-3">
-                {event.status === "live" ? (
-                  <Badge>
-                    {event.links.length === 0 || event.statusSource === "manual"
-                      ? "Live · set by studio"
-                      : "Live"}
-                  </Badge>
-                ) : (
-                  <Badge>{event.status}</Badge>
-                )}
+                <Badge>{liveEventBadgeLabel(event)}</Badge>
                 {event.channelNameEn ? <span className="text-sm text-muted">{event.channelNameEn}</span> : null}
               </div>
               <h3 className="mt-3 text-2xl text-ink">{pickLocale(locale, event.titleEn, event.titleTa)}</h3>

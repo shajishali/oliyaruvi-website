@@ -7,7 +7,7 @@
     "start": "node dist/server.js",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/app.test.ts",
+    "test": "tsx --import ./src/test-env.ts --test \"src/**/*.test.ts\"",
     "seed:admin": "tsx src/scripts/seed-admin.ts"
   },
   "dependencies": {

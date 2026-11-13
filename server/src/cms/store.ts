@@ -7,10 +7,16 @@ import { defaultPages } from "./default-pages";
 import type { PublicPage, PublicSection } from "./pages";
 import type { CmsStore, StoredPage, StoredTheme } from "./store-types";
 
-const dataDir = path.resolve(__dirname, "../../../.data");
-const storePath = path.join(dataDir, "cms-store.json");
-
 let cache: CmsStore | null = null;
+
+function dataDir() {
+  if (process.env.CMS_DATA_DIR) return path.resolve(process.env.CMS_DATA_DIR);
+  return path.resolve(__dirname, "../../../.data");
+}
+
+function storePath() {
+  return path.join(dataDir(), "cms-store.json");
+}
 
 function publishedTheme(): StoredTheme {
   return {
@@ -82,13 +88,15 @@ function normalizePageKeys(store: CmsStore) {
 
 export function readStore(): CmsStore {
   if (cache) return cache;
-  fs.mkdirSync(dataDir, { recursive: true });
-  if (!fs.existsSync(storePath)) {
+  const dir = dataDir();
+  const file = storePath();
+  fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(file)) {
     cache = createEmptyStore();
     writeStore(cache);
     return cache;
   }
-  const raw = fs.readFileSync(storePath, "utf8");
+  const raw = fs.readFileSync(file, "utf8");
   const parsed = JSON.parse(raw) as CmsStore;
   const needsBusinessMigrate = !Array.isArray((parsed as { albums?: unknown }).albums);
   cache = ensureBusinessSlice(parsed);
@@ -98,9 +106,9 @@ export function readStore(): CmsStore {
 }
 
 export function writeStore(next: CmsStore) {
-  fs.mkdirSync(dataDir, { recursive: true });
+  fs.mkdirSync(dataDir(), { recursive: true });
   cache = next;
-  fs.writeFileSync(storePath, JSON.stringify(next, null, 2), "utf8");
+  fs.writeFileSync(storePath(), JSON.stringify(next, null, 2), "utf8");
 }
 
 export function mutateStore(mutator: (store: CmsStore) => void) {
@@ -112,7 +120,7 @@ export function mutateStore(mutator: (store: CmsStore) => void) {
 }
 
 export function uploadsDir() {
-  const dir = path.join(dataDir, "uploads");
+  const dir = path.join(dataDir(), "uploads");
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -120,4 +128,8 @@ export function uploadsDir() {
 export function resetStoreForTests() {
   cache = createEmptyStore();
   writeStore(cache);
+}
+
+export function clearStoreCache() {
+  cache = null;
 }

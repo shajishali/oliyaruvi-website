@@ -547,6 +547,8 @@ Outcome: admin publish is the only way content changes the public site, and cach
 
 # Phase 7 — Testing
 
+Status: complete. `npm test` passes (76 tests). Zod coverage for blocks, booking, enquiry, product, live-event, and order payloads; role/SQL auth checks; CMS draft/publish/reorder/restore; public form and media-limit behaviour. Browser pass at mobile and desktop recorded in `phase-7-testing.md` (LCP ~868 ms, ~428 KB homepage transfer). Lightbox UI click deferred until an album has photographs; keyboard mapping is unit-tested.
+
 Outcome: core workflows have automated tests, and the visual pass is recorded.
 
 ## 7.1 Schema and validation
