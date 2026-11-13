@@ -7,7 +7,8 @@ import { applyDocumentMeta, businessJsonLd, canonicalUrl, documentMeta } from ".
 import { requireStaff, type VerifyToken } from "./middleware/require-staff";
 import { adminRouter } from "./routes/admin";
 import { publicRouter } from "./routes/public";
-import { uploadsDir } from "./cms/store";
+import { readStore, uploadsDir } from "./cms/store";
+import { robotsTxt, sitemapXml } from "./cms/seo";
 import { isAuthConfigured } from "./db/client";
 
 export type CreateAppOptions = {
@@ -52,7 +53,37 @@ export function createApp(options: CreateAppOptions = {}): Express {
     });
   });
 
-  app.use("/media", express.static(uploadsDir()));
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(robotsTxt());
+  });
+
+  app.get("/sitemap.xml", (_req, res) => {
+    res.type("application/xml").send(sitemapXml());
+  });
+
+  app.get(/^\/media\/(.+)$/, (req, res) => {
+    const relative = String(req.params[0] || "").replace(/\\/g, "/");
+    if (!relative || relative.includes("..") || relative.startsWith("private/")) {
+      res.status(404).end();
+      return;
+    }
+    const store = readStore();
+    const asset = store.media.find(
+      (item) => !item.deletedAt && (item.storagePath === relative || item.url === `/media/${relative}`),
+    );
+    if (!asset) {
+      res.status(404).json({ error: "Media not found" });
+      return;
+    }
+    const absolute = path.join(uploadsDir(), relative);
+    if (!fs.existsSync(absolute)) {
+      res.status(404).end();
+      return;
+    }
+    res.set("Cache-Control", "public, max-age=86400");
+    res.sendFile(absolute);
+  });
+
   app.use("/api/public", publicRouter);
   app.use("/api/admin", requireStaff(options), adminRouter);
   app.use("/api", (_req, res) => {
@@ -69,8 +100,12 @@ export function createApp(options: CreateAppOptions = {}): Express {
       }
       const indexPath = path.join(webDist, "index.html");
       const raw = fs.readFileSync(indexPath, "utf8");
-      const meta = documentMeta();
-      let html = applyDocumentMeta(raw, { ...meta, canonical: canonicalUrl(req.path) });
+      const meta = documentMeta(req.path);
+      let html = applyDocumentMeta(raw, {
+        ...meta,
+        canonical: canonicalUrl(req.path),
+        ogImage: meta.ogImage,
+      });
       if (req.path.startsWith("/admin")) {
         html = html.replace("</head>", `    <meta name="robots" content="noindex" />\n  </head>`);
       } else {

@@ -7,6 +7,7 @@ import type { Product, ProductCategory } from "../../lib/types";
 import { useSiteSettings } from "../public/PublicLayout";
 import { Button } from "../ui/Button";
 import { EmptyState } from "../public/EmptyState";
+import { MediaImage } from "../public/MediaImage";
 import { whatsAppHref } from "../../lib/phone";
 
 export function ProductGridBlock({ content }: { content: Record<string, unknown> }) {
@@ -70,8 +71,17 @@ export function ProductGridBlock({ content }: { content: Record<string, unknown>
                 ? `Rs. ${product.variants.find((variant) => variant.priceLkr != null)?.priceLkr}`
                 : "Ask for price";
             const base = product.catalogue === "gifts" ? "/gifts" : "/printing";
+            const image = product.images[0];
             return (
               <article key={product.id} className="card flex flex-col">
+                {image?.url ? (
+                  <MediaImage
+                    src={image.url}
+                    alt={pickLocale(locale, image.altEn, image.altTa) || name}
+                    className="mb-3 aspect-[4/3] w-full rounded-xl object-cover"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                ) : null}
                 <p className="text-xs uppercase tracking-[0.14em] text-gold">{product.categoryNameEn}</p>
                 <h3 className="mt-3 text-2xl text-ink">
                   <Link className="no-underline text-inherit" to={`${base}/${product.slug}`}>

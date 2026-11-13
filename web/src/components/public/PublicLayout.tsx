@@ -50,7 +50,10 @@ export function PublicLayout() {
     root.style.setProperty("--font-tamil", `${safeFont(theme.tokens.font.tamil, "Noto Sans Tamil")}, sans-serif`);
     root.style.setProperty("--radius-button", safeLength(theme.tokens.radius, "999px"));
     root.style.setProperty("--space-section", safeLength(theme.tokens.spacing, "4.5rem"));
-    document.title = site.settings.businessName;
+    // Per-page titles are set by CmsPage / product / album views. Only seed the brand if empty.
+    if (!document.title || document.title === "Oliyaruvi Digital Colour Lab") {
+      document.title = site.settings.businessName;
+    }
   }, [site.settings.businessName, theme]);
 
   return (

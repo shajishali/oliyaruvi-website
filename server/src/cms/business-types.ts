@@ -144,6 +144,14 @@ export type StoredBooking = {
   status: InboxStatus;
   assignedTo: string | null;
   notes: { id: string; body: string; createdAt: string; createdBy: string | null }[];
+  references?: {
+    id: string;
+    fileName: string;
+    mimeType: string;
+    byteSize: number;
+    storagePath: string;
+    createdAt: string;
+  }[];
   createdAt: string;
 };
 

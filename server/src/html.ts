@@ -1,4 +1,5 @@
-import { defaultDocumentMeta, defaultSite } from "./cms/defaults";
+import { defaultDocumentMeta } from "./cms/defaults";
+import { businessJsonLdFromSettings, pageDocumentMeta } from "./cms/seo";
 
 export function escapeHtml(value: string) {
   return value
@@ -15,7 +16,7 @@ export function canonicalUrl(pathname: string) {
 
 export function applyDocumentMeta(
   html: string,
-  meta: { title: string; description: string; canonical: string },
+  meta: { title: string; description: string; canonical: string; ogImage?: string | null },
 ) {
   const title = escapeHtml(meta.title);
   const description = escapeHtml(meta.description);
@@ -26,6 +27,8 @@ export function applyDocumentMeta(
       /<meta name="description" content="[^"]*"\s*\/?>/,
       `<meta name="description" content="${description}" />`,
     );
+  } else {
+    next = next.replace("</head>", `    <meta name="description" content="${description}" />\n  </head>`);
   }
   if (next.includes('rel="canonical"')) {
     next = next.replace(
@@ -35,24 +38,28 @@ export function applyDocumentMeta(
   } else {
     next = next.replace("</head>", `    <link rel="canonical" href="${canonical}" />\n  </head>`);
   }
+  const ogTags = [
+    `<meta property="og:title" content="${title}" />`,
+    `<meta property="og:description" content="${description}" />`,
+    `<meta property="og:url" content="${canonical}" />`,
+    `<meta property="og:type" content="website" />`,
+  ];
+  if (meta.ogImage) {
+    const image = escapeHtml(
+      meta.ogImage.startsWith("http") ? meta.ogImage : new URL(meta.ogImage, canonicalUrl("/")).href,
+    );
+    ogTags.push(`<meta property="og:image" content="${image}" />`);
+  }
+  next = next.replace("</head>", `    ${ogTags.join("\n    ")}\n  </head>`);
   return next;
 }
 
 export function businessJsonLd() {
-  return JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: defaultSite.businessName,
-    telephone: ["+94773928215", "+94777241958"],
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Nelliady",
-      addressRegion: "Jaffna",
-      addressCountry: "LK",
-    },
-  }).replaceAll("<", "\\u003c");
+  return businessJsonLdFromSettings();
 }
 
-export function documentMeta() {
-  return defaultDocumentMeta;
+export function documentMeta(pathname = "/") {
+  return pageDocumentMeta(pathname);
 }
+
+export { defaultDocumentMeta };

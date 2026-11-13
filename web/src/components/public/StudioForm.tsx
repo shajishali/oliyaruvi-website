@@ -30,6 +30,7 @@ export function StudioForm({ purpose, productId, productName }: Props) {
   const [location, setLocation] = useState("");
   const [details, setDetails] = useState("");
   const [honeypot, setHoneypot] = useState("");
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -56,6 +57,15 @@ export function StudioForm({ purpose, productId, productName }: Props) {
           requirements: details,
           honeypot,
         });
+        if (referenceFile && result.id) {
+          const apiBase = (import.meta.env.VITE_API_URL?.trim() ?? "").replace(/\/$/, "");
+          const form = new FormData();
+          form.append("file", referenceFile);
+          await fetch(`${apiBase}/api/public/bookings/${result.id}/files`, {
+            method: "POST",
+            body: form,
+          });
+        }
         setSuccess(result.message);
       } else {
         const result = await postEnquiry({
@@ -76,6 +86,7 @@ export function StudioForm({ purpose, productId, productName }: Props) {
       setEventDate("");
       setLocation("");
       setDetails("");
+      setReferenceFile(null);
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Something went wrong.");
     } finally {
@@ -130,6 +141,15 @@ export function StudioForm({ purpose, productId, productName }: Props) {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
+          <label className="field" htmlFor={`${purpose}-reference`}>
+            <span>Reference file (optional, image or PDF)</span>
+            <input
+              id={`${purpose}-reference`}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,application/pdf"
+              onChange={(e) => setReferenceFile(e.target.files?.[0] ?? null)}
+            />
+          </label>
         </>
       ) : null}
       <TextAreaField

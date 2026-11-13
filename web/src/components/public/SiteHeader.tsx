@@ -83,13 +83,25 @@ export function SiteHeader({ settings, items }: Props) {
 }
 
 function LanguageSwitch({ locale, setLocale }: { locale: "en" | "ta"; setLocale: (locale: "en" | "ta") => void }) {
+  function switchTo(next: "en" | "ta") {
+    if (next === locale) return;
+    try {
+      localStorage.setItem("oliyaruvi.locale", next);
+    } catch {
+      // Continue with in-memory locale if storage is blocked.
+    }
+    setLocale(next);
+    // Reload the same route so locale-dependent fetches and meta remount cleanly.
+    window.location.reload();
+  }
+
   return (
     <div className="flex rounded-full border border-gold/30 p-1" role="group" aria-label="Language">
       <button
         type="button"
         className={`rounded-full px-3 py-1 text-xs ${locale === "en" ? "bg-gold text-black" : "text-muted"}`}
         aria-pressed={locale === "en"}
-        onClick={() => setLocale("en")}
+        onClick={() => switchTo("en")}
       >
         EN
       </button>
@@ -97,7 +109,7 @@ function LanguageSwitch({ locale, setLocale }: { locale: "en" | "ta"; setLocale:
         type="button"
         className={`rounded-full px-3 py-1 font-tamil text-xs ${locale === "ta" ? "bg-gold text-black" : "text-muted"}`}
         aria-pressed={locale === "ta"}
-        onClick={() => setLocale("ta")}
+        onClick={() => switchTo("ta")}
       >
         தமிழ்
       </button>

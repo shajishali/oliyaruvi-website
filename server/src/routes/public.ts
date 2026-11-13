@@ -15,11 +15,22 @@ import {
   readVideoCategories,
   readVideos,
 } from "../cms/catalogs";
-import { submitBooking, submitEnquiry } from "../cms/forms";
+import { submitBooking, submitEnquiry, saveBookingReference } from "../cms/forms";
 import { readPage } from "../cms/pages";
 import { readNavigation, readSite, readTheme } from "../cms/public-content";
+import { readStore } from "../cms/store";
+import multer from "multer";
+import { MEDIA_LIMITS } from "../media/limits";
 
 export const publicRouter = Router();
+const referenceUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: MEDIA_LIMITS.referenceBytes },
+});
+
+function storeVersion() {
+  return readStore().version || 1;
+}
 
 publicRouter.get("/site", async (_req, res, next) => {
   try {
@@ -44,8 +55,9 @@ publicRouter.get("/navigation", async (_req, res, next) => {
       return;
     }
     const result = await readNavigation();
-    writeCache("navigation", result, 1);
-    sendCached(res, result, 1);
+    const version = storeVersion();
+    writeCache("navigation", result, version);
+    sendCached(res, result, version);
   } catch (error) {
     next(error);
   }
@@ -59,8 +71,9 @@ publicRouter.get("/theme", async (_req, res, next) => {
       return;
     }
     const result = await readTheme();
-    writeCache("theme", result, 1);
-    sendCached(res, result, 1);
+    const version = storeVersion();
+    writeCache("theme", result, version);
+    sendCached(res, result, version);
   } catch (error) {
     next(error);
   }
@@ -79,8 +92,34 @@ publicRouter.get("/pages/:slug", async (req, res, next) => {
       res.status(404).json({ error: "Page not found" });
       return;
     }
-    writeCache(key, result, 1);
-    sendCached(res, result, 1);
+    const version = storeVersion();
+    writeCache(key, result, version);
+    sendCached(res, result, version);
+  } catch (error) {
+    next(error);
+  }
+});
+
+publicRouter.get("/media", async (req, res, next) => {
+  try {
+    const ids = String(req.query.ids || "")
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean);
+    const store = readStore();
+    const media = ids
+      .map((id) => store.media.find((item) => item.id === id && !item.deletedAt))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      .map((item) => ({
+        id: item.id,
+        url: item.url,
+        altEn: item.altEn,
+        altTa: item.altTa,
+        kind: item.kind,
+        mimeType: item.mimeType,
+      }));
+    res.set("Cache-Control", "public, max-age=60");
+    res.json({ media });
   } catch (error) {
     next(error);
   }
@@ -243,6 +282,32 @@ publicRouter.post("/enquiries", async (req, res, next) => {
       res.status(400).json({ error: "Please check the form and try again." });
       return;
     }
+    next(error);
+  }
+});
+
+publicRouter.post("/bookings/:id/files", referenceUpload.single("file"), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "A reference file is required." });
+      return;
+    }
+    if (!(MEDIA_LIMITS.referenceTypes as readonly string[]).includes(req.file.mimetype)) {
+      res.status(400).json({ error: "Unsupported reference file type." });
+      return;
+    }
+    const saved = saveBookingReference(req.params.id, {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      buffer: req.file.buffer,
+    });
+    if (!saved) {
+      res.status(404).json({ error: "Booking not found" });
+      return;
+    }
+    res.status(201).json(saved);
+  } catch (error) {
     next(error);
   }
 });

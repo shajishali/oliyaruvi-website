@@ -1,8 +1,10 @@
 import { createHash, randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 import type { Request } from "express";
 import { getAnonClient } from "../db/client";
 import { bookingSchema, enquirySchema } from "../schemas/forms";
-import { mutateStore, readStore } from "./store";
+import { mutateStore, readStore, uploadsDir } from "./store";
 
 const rateWindowMs = 60_000;
 const rateLimit = 8;
@@ -140,4 +142,34 @@ export function openInboxCounts() {
     bookings: store.bookings.filter((item) => item.status === "new" || item.status === "reviewing").length,
     orders: store.orders.filter((item) => item.productionStatus !== "done").length,
   };
+}
+
+export function saveBookingReference(
+  bookingId: string,
+  file: { originalname: string; mimetype: string; size: number; buffer: Buffer },
+) {
+  const booking = readStore().bookings.find((item) => item.id === bookingId);
+  if (!booking) return null;
+  const id = randomUUID();
+  const ext = path.extname(file.originalname) || (file.mimetype === "application/pdf" ? ".pdf" : ".bin");
+  const storagePath = path.join("private", "bookings", bookingId, `${id}${ext}`);
+  const absolute = path.join(uploadsDir(), storagePath);
+  fs.mkdirSync(path.dirname(absolute), { recursive: true });
+  fs.writeFileSync(absolute, file.buffer);
+  const record = {
+    id,
+    fileName: file.originalname,
+    mimeType: file.mimetype,
+    byteSize: file.size,
+    storagePath: storagePath.replace(/\\/g, "/"),
+    createdAt: new Date().toISOString(),
+  };
+  mutateStore((store) => {
+    const target = store.bookings.find((item) => item.id === bookingId);
+    if (!target) return;
+    const refs = (target as { references?: typeof record[] }).references || [];
+    refs.push(record);
+    (target as { references?: typeof record[] }).references = refs;
+  });
+  return { id: record.id, fileName: record.fileName };
 }

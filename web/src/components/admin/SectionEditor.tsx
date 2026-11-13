@@ -306,26 +306,29 @@ function LocaleFields({
   return (
     <div className="grid gap-3 rounded-2xl border border-gold/15 p-3">
       <p className="text-xs uppercase tracking-[0.14em] text-muted">{locale}</p>
-      {fields.map((field) =>
-        field === "body" || field === "intro" ? (
+      {fields.map((field) => {
+        const value = asString(values[field]);
+        const missingTa = locale === "TA" && !value.trim();
+        const label = missingTa ? `${field} · Tamil missing` : field;
+        return field === "body" || field === "intro" ? (
           <TextAreaField
             key={field}
             id={`${locale}-${field}`}
-            label={field}
+            label={label}
             rows={3}
-            value={asString(values[field])}
+            value={value}
             onChange={(event) => onChange({ [field]: event.target.value })}
           />
         ) : (
           <Field
             key={field}
             id={`${locale}-${field}`}
-            label={field}
-            value={asString(values[field])}
+            label={label}
+            value={value}
             onChange={(event) => onChange({ [field]: event.target.value })}
           />
-        ),
-      )}
+        );
+      })}
     </div>
   );
 }

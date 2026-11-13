@@ -127,6 +127,29 @@ adminRouter.get("/pages/:id", (req, res) => {
   });
 });
 
+adminRouter.get("/pages/:id/preview", (req, res) => {
+  requireContent(req, res, () => {
+    const page = getPageAdmin(req.params.id);
+    if (!page) {
+      res.status(404).json({ error: "Page not found" });
+      return;
+    }
+    const sections = page.draft?.sections ?? page.published?.sections ?? [];
+    res.set("Cache-Control", "no-store");
+    res.json({
+      source: "draft",
+      page: {
+        slug: page.slug,
+        titleEn: page.seo.en.title,
+        titleTa: page.seo.ta.title,
+        descriptionEn: page.seo.en.description,
+        descriptionTa: page.seo.ta.description,
+        sections: sections.filter((section) => section.isVisible),
+      },
+    });
+  });
+});
+
 adminRouter.patch("/pages/:id", (req, res, next) => {
   requireContent(req, res, () => {
     try {

@@ -494,6 +494,8 @@ Combine the editors in `08`, `10`, and `11` into one screen:
 
 # Phase 6 — Integration
 
+Status: complete. Public pages stay store/API driven. Cache headers and in-process clear on publish. Media is gated to non-deleted library files; private booking uploads stay under `/media/private` and are blocked. `/sitemap.xml` and `/robots.txt` are live. Hero/image blocks resolve media with priority/lazy loading. Locale switch reloads the route; admin editors mark missing Tamil. Booking reference uploads are size/type limited. Lighthouse scores recorded in `phase-6-lighthouse.md` (Performance 24 on local HTTP, Accessibility 93, Best Practices 100, SEO 100).
+
 Outcome: admin publish is the only way content changes the public site, and caches clear safely.
 
 ## 6.1 One read path

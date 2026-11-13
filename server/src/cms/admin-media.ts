@@ -4,6 +4,7 @@ import path from "path";
 import type { VerifiedAdmin } from "../auth/access";
 import { MEDIA_LIMITS } from "../media/limits";
 import { writeAudit } from "./audit";
+import { clearPublicCache } from "./cache";
 import { mutateStore, readStore, uploadsDir } from "./store";
 import type { StoredMedia } from "./store-types";
 
@@ -71,6 +72,7 @@ export function saveUploadedMedia(
     store.media.unshift(item);
   });
   writeAudit(admin, "upload", "media", id, `Uploaded ${item.fileName}`);
+  clearPublicCache();
   return item;
 }
 

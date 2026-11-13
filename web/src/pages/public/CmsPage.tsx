@@ -19,7 +19,15 @@ export function CmsPage({ slug }: { slug: string }) {
         if (!alive) return;
         setPage(result.page);
         const title = pickLocale(locale, result.page.titleEn, result.page.titleTa);
+        const description = pickLocale(locale, result.page.descriptionEn, result.page.descriptionTa);
         if (title) document.title = `${title} · Oliyaruvi`;
+        let meta = document.querySelector('meta[name="description"]');
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.setAttribute("name", "description");
+          document.head.appendChild(meta);
+        }
+        if (description) meta.setAttribute("content", description);
       })
       .catch(() => {
         if (!alive) return;
