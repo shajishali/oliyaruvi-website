@@ -1,0 +1,269 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background: var(--color-background);
+    color: var(--color-text);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-body);
+    background:
+      radial-gradient(1200px 500px at 50% -10%, rgba(214, 172, 87, 0.14), transparent 55%),
+      var(--color-background);
+  }
+
+  :lang(ta) {
+    font-family: var(--font-tamil);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+  }
+
+  h1:lang(ta),
+  h2:lang(ta),
+  h3:lang(ta) {
+    font-family: var(--font-tamil);
+    font-weight: 600;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-light-gold);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.25rem;
+    border-radius: var(--radius-button);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .field span {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    border: 1px solid rgba(214, 172, 87, 0.35);
+    background: #101014;
+    color: var(--color-text);
+    border-radius: 0.8rem;
+    padding: 0.75rem 0.9rem;
+    font: inherit;
+  }
+
+  .card {
+    background: rgba(23, 23, 27, 0.9);
+    border: 1px solid rgba(214, 172, 87, 0.22);
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+  }
+
+  .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(214, 172, 87, 0.4);
+    background: transparent;
+    color: var(--color-light-gold);
+  }
+
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.72);
+    display: grid;
+    align-items: end;
+    padding: 0.75rem;
+  }
+
+  .dialog-panel {
+    background: var(--color-surface);
+    border: 1px solid rgba(214, 172, 87, 0.35);
+    border-radius: 1.25rem;
+    padding: 1rem;
+    max-height: min(80vh, 40rem);
+    overflow: auto;
+  }
+
+  .rail-button {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: var(--color-muted);
+    border-radius: 0.8rem;
+    padding: 0.7rem 0.85rem;
+  }
+
+  .rail-button[aria-current="page"],
+  .rail-button.is-active {
+    background: rgba(214, 172, 87, 0.14);
+    color: var(--color-light-gold);
+  }
+
+  .rail-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
+}
+
+.btn.is-gold {
+  background: linear-gradient(180deg, var(--color-light-gold), var(--color-gold));
+  color: #1a1408;
+}
+
+.btn.is-outline {
+  background: transparent;
+  color: var(--color-light-gold);
+  border-color: rgba(214, 172, 87, 0.7);
+}
+
+.btn.is-whatsapp {
+  background: #1f8f4e;
+  color: #f7fff8;
+}
+
+.reveal {
+  opacity: 0;
+  transform: none;
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal-rise {
+  transform: translateY(1.25rem);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-rise,
+  .service-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.88);
+  padding: 1rem;
+}
+
+.lightbox-inner {
+  width: min(96vw, 72rem);
+  position: relative;
+}
+
+.lightbox-inner img {
+  display: block;
+  width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 1rem;
+}
+
+.lightbox-actions {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.masonry {
+  columns: 1;
+  column-gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .masonry {
+    columns: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry {
+    columns: 3;
+  }
+}
+
+.masonry-item {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  break-inside: avoid;
+}
+
+.masonry-item img {
+  display: block;
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(214, 172, 87, 0.2);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

@@ -1,0 +1,14 @@
+:root {
+  --color-background: #0b0b0d;
+  --color-surface: #17171b;
+  --color-gold: #d6ac57;
+  --color-light-gold: #f3d58c;
+  --color-maroon: #651c2a;
+  --color-text: #f7f3eb;
+  --color-muted: #b8b1a8;
+  --font-heading: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", sans-serif;
+  --font-tamil: "Noto Sans Tamil", "Inter", sans-serif;
+  --radius-button: 999px;
+  --space-section: 4.5rem;
+}
